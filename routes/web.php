@@ -30,7 +30,7 @@ Route::get('/dashboard/{id}', function ($id) {
 
 
         try {
-            $response = \Illuminate\Support\Facades\Http::get('https://0d3ce8b0-2146-4852-b910-2feca57524f9.mock.pstmn.io//cforcast', [
+            $response = \Illuminate\Support\Facades\Http::get('https://wandering-water-6831.fly.dev/cforcast', [
                 'device_id' => $active_device->mqtt_device_id
             ]);
             $data = $response->json();
