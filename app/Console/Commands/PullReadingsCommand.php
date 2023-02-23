@@ -31,11 +31,11 @@ class PullReadingsCommand extends Command
     public function __construct()
     {
         parent::__construct();
-//        $this->mqttConnection = MQTT::connection();
-//        $devices = Device::all();
-//        foreach ($devices as $device) {
-//            $this->subscribeDeviceToReadingsTopic($device);
-//        }
+        $this->mqttConnection = MQTT::connection();
+        $devices = Device::all();
+        foreach ($devices as $device) {
+            $this->subscribeDeviceToReadingsTopic($device);
+        }
     }
 
     public function subscribeDeviceToReadingsTopic(Device $device)
@@ -70,7 +70,7 @@ class PullReadingsCommand extends Command
     public function handle()
     {
         while (true) {
-            if (sizeof($this->connected_device_ids)) {
+            if (sizeof($this->connected_device_ids)>0) {
                 $this->mqttConnection->loopOnce(microtime(true), false);
                 $devices = Device::all();
                 foreach ($devices as $device) {
@@ -78,8 +78,33 @@ class PullReadingsCommand extends Command
                         $this->subscribeDeviceToReadingsTopic($device);
                     }
                 }
-                usleep(500000); // Sleep for 500ms (0.5 seconds) before calling the function again
             }
+            $devices = Device::all();
+            foreach ($devices as $device) {
+                $latest_reading = $device->readings()->where('voltage_reading', '!=', 0)->latest()->first();
+                if ($latest_reading) {
+                    if ($latest_reading->created_at < Carbon::now()->subSeconds(12)) {
+                        //Last reading received more than 12 seconds ago
+                        $device->update(['online_state' => false]);
+                        $device->update(['power_state' => false]);
+                    } else {
+                        //Last reading recieved less than 12 seconds ago
+                        $device->update(['online_state' => true]);
+                        if ($latest_reading->voltage_reading == 0) {
+                            //last reading is 0
+                            $device->update(['power_state' => false]);
+                        } else {
+                            //last reading is non zero
+                            $device->update(['power_state' => true]);
+                        }
+                    }
+                } else {
+                    //No readings available for device
+                    $device->update(['online_state' => false]);
+                    $device->update(['power_state' => false]);
+                }
+            }
+            usleep(500000); // Sleep for 500ms (0.5 seconds) before calling the function again
         }
     }
 }
