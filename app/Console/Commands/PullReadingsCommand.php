@@ -69,7 +69,7 @@ class PullReadingsCommand extends Command
         foreach ($devices as $device) {
             $this->subscribeDeviceToReadingsTopic($device);
         }
-        
+
         while (true) {
             if (sizeof($this->connected_device_ids)>0) {
                 $this->mqttConnection->loopOnce(microtime(true));
@@ -79,6 +79,7 @@ class PullReadingsCommand extends Command
                         $this->subscribeDeviceToReadingsTopic($device);
                     }
                 }
+                unset($devices);
             }
         }
     }
