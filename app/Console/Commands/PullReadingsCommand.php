@@ -31,11 +31,6 @@ class PullReadingsCommand extends Command
     public function __construct()
     {
         parent::__construct();
-        $this->mqttConnection = MQTT::connection();
-        $devices = Device::all();
-        foreach ($devices as $device) {
-            $this->subscribeDeviceToReadingsTopic($device);
-        }
     }
 
     public function subscribeDeviceToReadingsTopic(Device $device)
@@ -69,6 +64,12 @@ class PullReadingsCommand extends Command
      */
     public function handle()
     {
+        $this->mqttConnection = MQTT::connection();
+        $devices = Device::all();
+        foreach ($devices as $device) {
+            $this->subscribeDeviceToReadingsTopic($device);
+        }
+        
         while (true) {
             if (sizeof($this->connected_device_ids)>0) {
                 $this->mqttConnection->loopOnce(microtime(true));
