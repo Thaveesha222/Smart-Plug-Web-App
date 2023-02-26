@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Device;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class ChangePowerSwitchState extends Command
 {
@@ -29,13 +30,13 @@ class ChangePowerSwitchState extends Command
      */
     public function handle()
     {
-        $devices = Device::all();
         while (true) {
+            $devices = Device::all();
             foreach ($devices as $device) {
-                $latest_reading = $device->readings()->where('voltage_reading', '!=', 0)->latest()->first();
+                $latest_reading = $device->readings()->latest()->first();
                 if ($latest_reading) {
-                    if ($latest_reading->created_at < Carbon::now()->subSeconds(12)) {
-                        //Last reading received more than 12 seconds ago
+                    if (Carbon::now()->diffInSeconds($latest_reading->created_at)>15) {
+                        //Last reading received more than 10 seconds ago
                         $device->update(['online_state' => false]);
                         $device->update(['power_state' => false]);
                     } else {
@@ -55,7 +56,7 @@ class ChangePowerSwitchState extends Command
                     $device->update(['power_state' => false]);
                 }
             }
-            usleep(500000); // Sleep for 500ms (0.5 seconds) before calling the function again
+            usleep(100000); // Sleep for 500ms (0.5 seconds) before calling the function again
         }
     }
 }
