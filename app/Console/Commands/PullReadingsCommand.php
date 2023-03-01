@@ -64,12 +64,13 @@ class PullReadingsCommand extends Command
      */
     public function handle()
     {
+        $this->info('Command Initiated');
         $this->mqttConnection = MQTT::connection();
         $devices = Device::all();
         foreach ($devices as $device) {
             $this->subscribeDeviceToReadingsTopic($device);
         }
-        $this->info('Command Initiated Successfully');
+        $this->info('Connection to Broker established and command executing');
 
         while (true) {
             if (sizeof($this->connected_device_ids)>0) {
