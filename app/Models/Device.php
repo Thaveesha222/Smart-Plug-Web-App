@@ -20,4 +20,9 @@ class Device extends Model
     {
         return $this->hasMany(Reading::class);
     }
+
+    public function device_logs()
+    {
+        return $this->hasMany(DeviceLog::class);
+    }
 }

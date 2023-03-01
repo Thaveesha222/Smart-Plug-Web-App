@@ -28,7 +28,6 @@ Route::get('/dashboard/{id}', function ($id) {
     if (Auth::user()->devices->count() > 0) {
         $active_device = $id == "any" ? Auth::user()->devices->first() : Device::find($id);
 
-
         try {
             $response = \Illuminate\Support\Facades\Http::get('https://wandering-water-6831.fly.dev/cforcast', [
                 'device_id' => $active_device->mqtt_device_id
@@ -266,6 +265,11 @@ Route::get('/check_switch_status/{device_id}', function ($device_id) {
 
 Route::get('/check_online_status/{device_id}', function ($device_id) {
     return Device::find($device_id)->online_state;
+});
+
+Route::get('/update_device_log/{device_id}', function ($device_id) {
+    $logs=Device::find($device_id)->device_logs()->latest()->take(10)->get()->toArray();
+    return $logs;
 });
 
 Route::middleware('auth')->group(function () {
