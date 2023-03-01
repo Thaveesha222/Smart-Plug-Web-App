@@ -9,7 +9,7 @@ class Device extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['device_name', 'mqtt_device_id', 'user_id','power_state','smart_mode_state'];
+    protected $fillable = ['device_name', 'mqtt_device_id', 'user_id','power_state','smart_mode_state','online_state'];
 
     public function user()
     {
