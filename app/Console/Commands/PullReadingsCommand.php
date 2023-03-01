@@ -78,6 +78,29 @@ class PullReadingsCommand extends Command
                     if(!in_array($device->id,$this->connected_device_ids)) {
                         $this->subscribeDeviceToReadingsTopic($device);
                     }
+
+                    $latest_reading = $device->readings()->latest()->first();
+                    if ($latest_reading) {
+                        if (Carbon::now()->diffInSeconds($latest_reading->created_at)>15) {
+                            //Last reading received more than 10 seconds ago
+                            $device->update(['online_state' => false]);
+                            $device->update(['power_state' => false]);
+                        } else {
+                            //Last reading recieved less than 12 seconds ago
+                            $device->update(['online_state' => true]);
+                            if ($latest_reading->voltage_reading == 0) {
+                                //last reading is 0
+                                $device->update(['power_state' => false]);
+                            } else {
+                                //last reading is non zero
+                                $device->update(['power_state' => true]);
+                            }
+                        }
+                    } else {
+                        //No readings available for device
+                        $device->update(['online_state' => false]);
+                        $device->update(['power_state' => false]);
+                    }
                 }
                 unset($devices);
             }
