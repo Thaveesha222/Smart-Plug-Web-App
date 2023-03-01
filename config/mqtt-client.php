@@ -71,8 +71,8 @@ return [
                     'verify_peer_name' => env('MQTT_TLS_VERIFY_PEER_NAME', false),
                     'ca_file' => env('MQTT_TLS_CA_FILE'),
                     'ca_path' => env('MQTT_TLS_CA_PATH'),
-                    'client_certificate_file' => 'C:\Users\thave\Downloads\server.crt',
-                    'client_certificate_key_file' => 'C:\Users\thave\Downloads\server.key',
+                    'client_certificate_file' => 'server.crt',
+                    'client_certificate_key_file' => 'server.key',
                     'client_certificate_key_passphrase' => env('MQTT_TLS_CLIENT_CERT_KEY_PASSPHRASE'),
                 ],
 
