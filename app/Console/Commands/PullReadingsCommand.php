@@ -69,10 +69,12 @@ class PullReadingsCommand extends Command
         foreach ($devices as $device) {
             $this->subscribeDeviceToReadingsTopic($device);
         }
+        $this->info('Command Initiated Successfully');
 
         while (true) {
             if (sizeof($this->connected_device_ids)>0) {
                 $this->mqttConnection->loopOnce(microtime(true));
+                $this->info('Looped!');
                 $devices = Device::all();
                 foreach ($devices as $device) {
                     if(!in_array($device->id,$this->connected_device_ids)) {
