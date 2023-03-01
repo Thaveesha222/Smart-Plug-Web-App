@@ -87,6 +87,7 @@ class PullReadingsCommand extends Command
                             //Last reading received more than 10 seconds ago
                             $device->update(['online_state' => false]);
                             $device->update(['power_state' => false]);
+                            $device->update(['smart_mode_state' => false]);
                         } else {
                             //Last reading recieved less than 12 seconds ago
                             $device->update(['online_state' => true]);

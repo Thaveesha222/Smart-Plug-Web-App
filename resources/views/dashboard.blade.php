@@ -763,7 +763,8 @@
                             </div>
                             <div class="can-toggle can-toggle--size-small" style="padding-left: 27px;">
                                 <input id="b" type="checkbox" @if($active_device->power_state) checked
-                                       @endif onchange="togglePower()">
+                                       @endif onchange="togglePower()"
+                                       @if(!$active_device->online_state) disabled @endif>
                                 <label for="b">
                                     <div class="can-toggle__switch" data-checked="On" data-unchecked="Off"></div>
                                 </label>
@@ -777,7 +778,8 @@
                             </div>
                             <div class="can-toggle can-toggle--size-small" style="padding-left: 47px;">
                                 <input id="c" type="checkbox" @if($active_device->smart_mode_state) checked
-                                       @endif onchange="toggleSmartMode()">
+                                       @endif onchange="toggleSmartMode()"
+                                       @if(!$active_device->online_state) disabled @endif>
                                 <label for="c">
                                     <div class="can-toggle__switch" data-checked="On" data-unchecked="Off"></div>
                                 </label>
@@ -803,7 +805,7 @@
                             <div class="p-6 text-gray-900 dark:text-gray-100" style="text-align-last: center;">
                                 Device Timeline
                             </div>
-                            <ul class="timeline" id="timeline-widget" style="font-size: small;">
+                            <ul class="timeline" id="timeline-widget" style="font-size: small;z-index: 0;">
                                 <!-- Item 1 -->
                                 <li>
                                     <div class="direction-r">
@@ -850,11 +852,12 @@
 </x-app-layout>
 <div class="modal">
     <div class="modal-content">
+        <div id="reader" width="400px" height="400px"></div>
         <form action="/devices/create" method="POST">
             @csrf
-            <x-input-label style="color: black;" for="device_id" :value="__('Enter Device ID')"/>
+            <x-input-label style="color: black;" for="device_id_to_enter" :value="__('Enter Device ID')"/>
 
-            <x-text-input id="device_id" class="block mt-1 w-full" style="background-color: white;color: black;"
+            <x-text-input id="device_id_to_enter" class="block mt-1 w-full" style="background-color: white;color: black;"
                           type="text"
                           name="device_id"
                           required
@@ -873,6 +876,27 @@
             </div>
         </form>
     </div>
+    <script>
+        function onScanSuccess(decodedText, decodedResult) {
+            var textBox = document.getElementById("device_id_to_enter");
+            textBox.value = decodedText;
+            // handle the scanned code as you like, for example:
+            console.log(`Code matched = ${decodedText}`, decodedResult);
+
+        }
+
+        function onScanFailure(error) {
+            // handle scan failure, usually better to ignore and keep scanning.
+            // for example:
+            // console.warn(`Code scan error = ${error}`);
+        }
+
+        let html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader",
+            { fps: 10, qrbox: {width: 400, height: 400} },
+            /* verbose= */ false);
+        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+    </script>
 </div>
 
 @if (Cache::has('device_already_exists_error'))
@@ -885,11 +909,10 @@
 
 @if($devices->count()>0)
     <script>
-
         const timeline_element = document.getElementById('timeline-widget');
         timeline_element.style.display = 'none';
 
-        power_changed_state = false;
+        last_power_toggeled_at = null
 
         function togglePower() {
             const checkbox = document.querySelector('#b');
@@ -909,7 +932,7 @@
                 }
             };
             xhr.send();
-            power_changed_state = true;
+            last_power_toggeled_at = new Date();
         }
 
         function toggleSmartMode() {
@@ -1080,7 +1103,6 @@
 
 
         document.querySelector('a').addEventListener('click', function (event) {
-            console.log("clicked");
             if (xhr && xhr.readyState !== 4) {
                 xhr.abort();
             }
@@ -1164,7 +1186,7 @@
         });
 
         var update_charts = true;
-        var device_logs={};
+        var device_logs = {};
         window.onload = function () {
             setInterval(function () {
                 //Get latest reading for voltage and current
@@ -1238,6 +1260,7 @@
                 var active_device_id = '<?php echo $active_device?->id; ?>';
 
                 //Check for changes in the switch state
+                new_date = new Date();
                 var xhr3 = new XMLHttpRequest();
                 const url2 = '/check_switch_status/' + active_device_id;
                 xhr3.open('GET', url2);
@@ -1245,10 +1268,12 @@
                     if (xhr3.status === 200) {
                         switch_state = xhr3.response;
                         const power_state_checkbox = document.getElementById('b');
-                        if (switch_state != 0) {
-                            power_state_checkbox.checked = true;
-                        } else {
-                            power_state_checkbox.checked = false;
+                        if (last_power_toggeled_at == null || Math.abs(new_date - last_power_toggeled_at) > 8000) {
+                            if (switch_state != 0) {
+                                power_state_checkbox.checked = true;
+                            } else {
+                                power_state_checkbox.checked = false;
+                            }
                         }
                     } else {
                         console.error(`Error: ${xhr3.status}`);
@@ -1270,10 +1295,17 @@
                             online_div.style.display = "block";
                             offline_div.style.display = "none";
                             update_charts = true;
+                            document.getElementById("b").disabled = false;
+                            document.getElementById("c").disabled = false;
                         } else {
                             online_div.style.display = "none";
                             offline_div.style.display = "block";
                             update_charts = false;
+                            document.getElementById("b").disabled = true;
+                            document.getElementById("c").disabled = true;
+
+                            document.getElementById("b").checked = false;
+                            document.getElementById("c").checked = false;
                         }
                     } else {
                         console.error(`Error: ${xhr4.status}`);
@@ -1290,10 +1322,10 @@
                     if (xhr5.status === 200) {
                         const list = document.getElementById('timeline-widget');
                         list.innerHTML = '';
-                        data=JSON.parse(xhr5.response)
-                        data.forEach(function(element) {
+                        data = JSON.parse(xhr5.response)
+                        data.forEach(function (element) {
                             if (!device_logs.hasOwnProperty(element.id)) {
-                                if(Object.keys(device_logs).length>3) {
+                                if (Object.keys(device_logs).length > 3) {
                                     delete device_logs[Object.keys(device_logs)[0]];
                                 }
                                 device_logs[element.id] = element.log + "#" + element.created_at;
@@ -1307,13 +1339,12 @@
                             });
 
                             timeline_element.style.display = '';
-                            console.log(device_logs[key])
                             const newItem = document.createElement('li');
                             newItem.innerHTML =
                                 '<div class="direction-r">' +
                                 '<div class="flag-wrapper">' +
-                                '<span class="flag">'+device_logs[key].split("#")[0]+'</span>' +
-                                '<span class="time-wrapper"><span class="time">'+formattedDate+'</span></span>' +
+                                '<span class="flag">' + device_logs[key].split("#")[0] + '</span>' +
+                                '<span class="time-wrapper"><span class="time">' + formattedDate + '</span></span>' +
                                 '</div>' +
                                 '</div>'
                             newItem.classList.add('list-item');

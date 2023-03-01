@@ -201,10 +201,6 @@ Route::prefix('devices')->group(function () {
     });
 });
 
-Route::get('/getReadings}', function () {
-    return true;
-});
-
 Route::get('/getReadings/{device_id}', function ($device_id) {
     $device = Device::where('mqtt_device_id', $device_id)->first();
     if ($device->readings->count() != 0 && $device->power_state && $device->online_state) {
