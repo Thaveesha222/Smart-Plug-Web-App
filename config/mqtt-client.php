@@ -65,8 +65,8 @@ return [
 
                 // The TLS settings used for the connection. Must match the specified port.
                 'tls' => [
-                    'enabled' => true,
-                    'allow_self_signed_certificate' => true,
+                    'enabled' => false,
+                    'allow_self_signed_certificate' => false,
                     'verify_peer' => false,
                     'verify_peer_name' => env('MQTT_TLS_VERIFY_PEER_NAME', false),
                     'ca_file' => env('MQTT_TLS_CA_FILE'),
