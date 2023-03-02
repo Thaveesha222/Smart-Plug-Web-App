@@ -264,8 +264,22 @@ Route::get('/check_online_status/{device_id}', function ($device_id) {
 });
 
 Route::get('/update_device_log/{device_id}', function ($device_id) {
-    $logs=Device::find($device_id)->device_logs()->latest()->take(10)->get()->toArray();
+    $logs = Device::find($device_id)->device_logs()->latest()->take(10)->get()->toArray();
     return $logs;
+});
+
+Route::get('/email_device_log/{device_id}', function ($device_id) {
+    $results = Device::find($device_id)->device_logs;
+    $filename = $device_id.'-'.Device::find($device_id)->device_name.'log.csv';
+    $handle = fopen($filename, 'w+');
+    fputcsv($handle, array('Name', 'Email', 'Mqtt Device ID','Device Name','Log','Created At'));
+
+    foreach ($results as $result) {
+        fputcsv($handle, array($result->device->user->name, $result->device->user->email, $result->device->mqtt_device_id, $result->device->device_name, $result->log, $result->created_at));
+    }
+
+    fclose($handle);
+    return response()->download($filename);
 });
 
 Route::middleware('auth')->group(function () {

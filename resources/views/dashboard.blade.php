@@ -802,8 +802,10 @@
                             <div id="chartdiv_current" style="width: 178px;height: 100px;"></div>
                         </div>
                         <div>
+                            <br>
                             <div class="p-6 text-gray-900 dark:text-gray-100" style="text-align-last: center;">
-                                Device Timeline
+                                Device Timeline <a href="/email_device_log/{{$active_device->id}}}" id="trigger-email"><br>(Click here to obtain your full
+                                    device log)</a>
                             </div>
                             <ul class="timeline" id="timeline-widget" style="font-size: small;z-index: 0;">
                                 <!-- Item 1 -->
@@ -857,7 +859,8 @@
             @csrf
             <x-input-label style="color: black;" for="device_id_to_enter" :value="__('Enter Device ID')"/>
 
-            <x-text-input id="device_id_to_enter" class="block mt-1 w-full" style="background-color: white;color: black;"
+            <x-text-input id="device_id_to_enter" class="block mt-1 w-full"
+                          style="background-color: white;color: black;"
                           type="text"
                           name="device_id"
                           required
@@ -876,27 +879,7 @@
             </div>
         </form>
     </div>
-    <script>
-        function onScanSuccess(decodedText, decodedResult) {
-            var textBox = document.getElementById("device_id_to_enter");
-            textBox.value = decodedText;
-            // handle the scanned code as you like, for example:
-            console.log(`Code matched = ${decodedText}`, decodedResult);
 
-        }
-
-        function onScanFailure(error) {
-            // handle scan failure, usually better to ignore and keep scanning.
-            // for example:
-            // console.warn(`Code scan error = ${error}`);
-        }
-
-        let html5QrcodeScanner = new Html5QrcodeScanner(
-            "reader",
-            { fps: 10, qrbox: {width: 400, height: 400} },
-            /* verbose= */ false);
-        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
-    </script>
 </div>
 
 @if (Cache::has('device_already_exists_error'))
@@ -1359,6 +1342,8 @@
         };
     </script>
 @endif
+
+{{--Add new device modal display--}}
 <script>
     /* Add new device modal*/
     const modal = document.querySelector('.modal');
@@ -1375,4 +1360,27 @@
 
     triggerBtn.addEventListener('click', showModal);
     closeBtn.addEventListener('click', hideModal);
+</script>
+
+{{--QR Scanner--}}
+<script>
+    function onScanSuccess(decodedText, decodedResult) {
+        var textBox = document.getElementById("device_id_to_enter");
+        textBox.value = decodedText;
+        // handle the scanned code as you like, for example:
+        console.log(`Code matched = ${decodedText}`, decodedResult);
+
+    }
+
+    function onScanFailure(error) {
+        // handle scan failure, usually better to ignore and keep scanning.
+        // for example:
+        // console.warn(`Code scan error = ${error}`);
+    }
+
+    let html5QrcodeScanner = new Html5QrcodeScanner(
+        "reader",
+        {fps: 10, qrbox: {width: 400, height: 400}},
+        /* verbose= */ false);
+    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
 </script>
