@@ -1186,7 +1186,7 @@
                         current = JSON.parse(xhr.response).current;
                         document.getElementById("voltage_reading").innerHTML = "Voltage Reading : " + voltage.toFixed(2) + " V";
                         document.getElementById("current_reading").innerHTML = "Current Reading : " + current.toFixed(2) + " A";
-                        hand1.showValue((voltage / 240) * 100, 1000, am4core.ease.cubicOut);
+                        hand1.showValue((voltage / 260) * 100, 1000, am4core.ease.cubicOut);
                         hand2.showValue((current / 10) * 100, 1000, am4core.ease.cubicOut);
 
 
@@ -1251,7 +1251,7 @@
                     if (xhr3.status === 200) {
                         switch_state = xhr3.response;
                         const power_state_checkbox = document.getElementById('b');
-                        if (last_power_toggeled_at == null || Math.abs(new_date - last_power_toggeled_at) > 8000) {
+                        if (last_power_toggeled_at == null || Math.abs(new_date - last_power_toggeled_at) > 9000) {
                             if (switch_state != 0) {
                                 power_state_checkbox.checked = true;
                             } else {
@@ -1338,7 +1338,7 @@
                     }
                 }
                 xhr5.send();
-            }, 3000);
+            }, 2000);
         };
     </script>
 @endif
