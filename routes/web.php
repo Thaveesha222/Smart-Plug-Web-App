@@ -29,10 +29,15 @@ Route::get('/dashboard/{id}', function ($id) {
         $active_device = $id == "any" ? Auth::user()->devices->first() : Device::find($id);
 
         try {
-            $response = \Illuminate\Support\Facades\Http::get('https://wandering-water-6831.fly.dev/cforcast', [
-                'device_id' => "QEIZrUmZGUuzBqRnw0jZ"
+            $client = new \GuzzleHttp\Client();
+
+            $response = $client->request('GET', 'https://wandering-water-6831.fly.dev/cforcast', [
+                'json' => [
+                    'device_id' => 'QEIZrUmZGUuzBqRnw0jZ',
+                ]
             ]);
-            $data = $response->json();
+            $data = json_decode($response->getBody()->getContents(), true);
+
             $prediction_values = \Illuminate\Support\Arr::flatten($data["data"]);
             $start = Carbon::now()->subDays(Carbon::now()->getDaysFromStartOfWeek());
             $prediction_dates = [];
@@ -272,7 +277,7 @@ Route::get('/email_device_log/{device_id}', function ($device_id) {
     $results = Device::find($device_id)->device_logs;
     $filename = 'log.csv';
     $handle = fopen($filename, 'w+');
-    fputcsv($handle, array('Name', 'Email', 'Mqtt Device ID','Device Name','Log','Created At'));
+    fputcsv($handle, array('Name', 'Email', 'Mqtt Device ID', 'Device Name', 'Log', 'Created At'));
 
     foreach ($results as $result) {
         fputcsv($handle, array($result->device->user->name, $result->device->user->email, $result->device->mqtt_device_id, $result->device->device_name, $result->log, $result->created_at));
