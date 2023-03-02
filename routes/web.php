@@ -30,7 +30,7 @@ Route::get('/dashboard/{id}', function ($id) {
 
         try {
             $response = \Illuminate\Support\Facades\Http::get('https://wandering-water-6831.fly.dev/cforcast', [
-                'device_id' => $active_device->mqtt_device_id
+                'device_id' => "QEIZrUmZGUuzBqRnw0jZ"
             ]);
             $data = $response->json();
             $prediction_values = \Illuminate\Support\Arr::flatten($data["data"]);
