@@ -270,7 +270,7 @@ Route::get('/update_device_log/{device_id}', function ($device_id) {
 
 Route::get('/email_device_log/{device_id}', function ($device_id) {
     $results = Device::find($device_id)->device_logs;
-    $filename = $device_id.'-'.Device::find($device_id)->device_name.'log.csv';
+    $filename = 'log.csv';
     $handle = fopen($filename, 'w+');
     fputcsv($handle, array('Name', 'Email', 'Mqtt Device ID','Device Name','Log','Created At'));
 
