@@ -1251,7 +1251,7 @@
                     if (xhr3.status === 200) {
                         switch_state = xhr3.response;
                         const power_state_checkbox = document.getElementById('b');
-                        if (last_power_toggeled_at == null || Math.abs(new_date - last_power_toggeled_at) > 9000) {
+                        if (last_power_toggeled_at == null || Math.abs(new_date - last_power_toggeled_at) > 10000) {
                             if (switch_state != 0) {
                                 power_state_checkbox.checked = true;
                             } else {
